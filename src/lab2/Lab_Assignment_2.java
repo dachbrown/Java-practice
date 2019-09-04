@@ -10,8 +10,9 @@ public class Lab_Assignment_2
 		long end_time = start_time + 30000;
 		long current_time = System.currentTimeMillis();
 		int current_score = 0;
+		boolean end_while = false;
 		Random random = new Random();
-		while(current_time < end_time)
+		while(current_time < end_time && end_while == false)
 		{
 			int r = random.nextInt(20);
 			String test_aa = FULL_NAMES[r];
@@ -24,7 +25,9 @@ public class Lab_Assignment_2
 			}
 			else
 			{
-				System.out.println("Sorry, that was incorrect.  The test has ended.");
+				end_while = true;
+				System.out.println("Sorry, the test has ended. Final score: " + current_score);
+				
 			}
 			current_time = System.currentTimeMillis();
 		}
