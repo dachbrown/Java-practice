@@ -40,7 +40,7 @@ public class Lab_Assignment_2
 	};
 	public static String[] SHORT_NAMES = 
 	{
-			"A","R", "N", "D", "C", "Q", "E", 
+		"A","R", "N", "D", "C", "Q", "E", 
 		"G",  "H", "I", "L", "K", "M", "F", 
 		"P", "S", "T", "W", "Y", "V"
 	};
