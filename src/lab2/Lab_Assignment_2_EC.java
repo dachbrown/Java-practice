@@ -6,7 +6,7 @@ public class Lab_Assignment_2_EC
 {
 	public static void main(String[] args)
 	{
-		System.out.println("Welcome to the Amino Acid Quiz. How long would you like to play in seconds?");
+		System.out.println("\nWelcome to the Amino Acid Quiz. How long would you like to play in seconds?");
 		int user_timer = Integer.parseInt(System.console().readLine());
 		long start_time = System.currentTimeMillis();
 		long end_time = start_time + user_timer * 1000;
@@ -20,30 +20,30 @@ public class Lab_Assignment_2_EC
 		{
 			int r = random.nextInt(20);
 			String test_aa = FULL_NAMES[r];
-			System.out.println("What is the one letter code for " + test_aa + "?");
 			current_time = System.currentTimeMillis();
+			System.out.println("\nTime Remaining: " + (end_time - current_time)/1000f + " seconds.\nWhat is the one letter code for " + test_aa + "?");
 			String user_answer = System.console().readLine().toUpperCase();
 			if( SHORT_NAMES[r].equals(user_answer) == true)
 			{
 				current_score++;
 				CORRECT[r]++;
-				System.out.println("Correct! Score: " + current_score + "\nTime Remaining: " + (end_time - current_time)/1000f + " seconds.\n");
+				System.out.println("Correct! Score: " + current_score + "\n");
 			}
 			else if( user_quit.equals(user_answer))
 			{
 				exit_while_loop = true;
-				System.out.println("OK, you can quit the test.\n");
+				System.out.println("\nOK, you can quit the test.\n");
 			}
 			else if( SHORT_NAMES[r].equals(user_answer) == false)
 			{
 				mistake_made = true;
 				MISTAKES[r]++;
-				System.out.println("Sorry, that was incorrect. The correct answer is : " + SHORT_NAMES[r] + "\nTime Remaining: " + (end_time - current_time)/1000f + " seconds.\n");
+				System.out.println("Sorry, that was incorrect. The correct answer is : " + SHORT_NAMES[r] + "\n");
 			}
 			else
 			{
 				exit_while_loop = true;
-				System.out.println("This is an error message for an incorrect input.");
+				System.out.println("This is an error message to insure the loop is not infinite.");
 			}
 		}
 		if( mistake_made == true)
@@ -57,7 +57,7 @@ public class Lab_Assignment_2_EC
 				}
 				else
 				{
-					System.out.println(SHORT_NAMES[x] + "\tCorrect: " + CORRECT[x] + "; Mistakes: " + MISTAKES[x]);
+					System.out.println(SHORT_NAMES[x] + "\tCorrect: " + CORRECT[x] + "; Mistakes: " + MISTAKES[x] + "\t\t" + FULL_NAMES[x]);
 				}
 			}
 		}
@@ -65,7 +65,7 @@ public class Lab_Assignment_2_EC
 		{
 			System.out.println("You made no mistakes! Congratulations!");
 		}
-		System.out.println("The test has ended. Final score: " + current_score + "\n");
+		System.out.println("\nThe test has ended. Final score: " + current_score + "\n");
 	};
 	public static String[] SHORT_NAMES = 
 	{
