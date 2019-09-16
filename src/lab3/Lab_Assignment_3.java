@@ -124,7 +124,21 @@ public class Lab_Assignment_3
 		 * Counts the number of each base in a string
 		 */
 		int[] COUNTS = {0,0,0,0};
+		char[] temp_s = s.toCharArray();
+		char[] BASES = {'A','C','G','T'};
 		for( int x=0; x < s.length(); x++)
+		{
+			for( int y=0; y < BASES.length; y++)
+			{
+				if(temp_s[x] == (BASES[y]))
+				{
+					COUNTS[y]++;
+				}
+			}
+		}
+		/** The below is a much more verbose, less effective method of the above.
+		 * I am saving this comment as reference.
+		 * for( int x=0; x < s.length(); x++)
 		{
 			char pos = s.charAt(x);
 			if( pos == 'A')
@@ -148,6 +162,7 @@ public class Lab_Assignment_3
 				System.out.println("There was an error in COUNT_BASES");
 			}
 		}
+		*/
 		return COUNTS;
 	}
 	public static int[][] FASTA_COUNTS(String[][] s)
