@@ -1,7 +1,4 @@
 package lab3;
-/**
- * Something is happening where the reader ignores the last line of the file, leading to the final sequence being dropped and then the sequence ID as well.
- */
 import java.io.BufferedReader;
 import java.io.Writer;
 import java.util.ArrayList;
