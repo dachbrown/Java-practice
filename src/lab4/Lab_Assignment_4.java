@@ -3,6 +3,8 @@ package lab4;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,12 +94,51 @@ public class Lab_Assignment_4
 				return readFastaFile;
 			}
 		}
+		public static void writeUnique(File inFile, File outFile) throws Exception
+		{
+			/**
+			 * Creates an output file which identifies and counts unique Fasta sequences from an input file.
+			 */
+			BufferedReader reader = new BufferedReader(new FileReader(inFile));
+			String line = reader.readLine();
+			String sequence = "";
+			Map<String,Integer> countMap = new TreeMap<String,Integer>();
+			while(line != null)
+			{
+				if( line.startsWith(">") == true && sequence != "")
+				{
+					Integer seq_count = countMap.get(sequence);
+					if( seq_count == null)
+					{
+						seq_count = 0;
+					}
+					seq_count++;
+					countMap.put(sequence, seq_count);
+					sequence = "";
+					line = reader.readLine();
+				}
+				else
+				{
+					sequence = sequence + line;
+					line = reader.readLine();
+				}
+			}
+			reader.close();
+			Writer writer = new FileWriter(outFile);
+			for( Map.Entry<String,Integer> entry : countMap.entrySet())
+			{
+				writer.write(">" + entry.getValue() + "\n" + entry.getKey() + "\n");
+			}
+			writer.flush(); writer.close();
+		}
 		public static void main(String[] args) throws Exception
 		{
 			System.out.println("\n\nThis is a FASTA parser.\nPlease input the filepath to the FASTA file:");
-			//String input_filepath = System.console().readLine();
-			String input_filepath = "wooble.fasta";
+			String input_filepath = System.console().readLine();
 			List<FastaSequence>fastaList = FastaSequence.readFastaFile(input_filepath);
+			File inFile = new File(input_filepath);
+			File outFile = new File(input_filepath + ".output.txt");
+			writeUnique(inFile, outFile);
 			for( FastaSequence fs : fastaList)
 			{
 				System.out.println(fs.getHeader());
@@ -105,30 +146,4 @@ public class Lab_Assignment_4
 				System.out.println(fs.getGCRatio());
 			}
 		}
-		/***
-		 * This needs fixing to be like slide 3 in the Lab
-		 * 
-		 * public static void writeUnique(File inFile, File outFile) throws Exception
-		 *
-		{*/
-			/**
-			 * for key in 1st hashmap, add all 1st hashmap values to second hashmap as keys the value incrementing for each new key occurrence
-			 
-			Map<String, Integer> countMap = new TreeMap<String, Integer>();
-			for( x=0; x < keys in seqMap; x++)
-			{
-				if( countMap.get(key) == false)
-				{
-						countMap.put(key, 0);
-				}
-				else
-				{
-					countMap.put(key, countMap.get(key) + 1);
-				}
-			}
-			for( key in countMap)
-			{
-				
-			}
-		}*/
 }
