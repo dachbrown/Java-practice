@@ -1,7 +1,15 @@
 package lab7;
-// Current issues each time i provide a new number (by pressing the start key), the thread count increases by 1
-// This is still the same even when I leave the thread out of the cancel or start methods i have 
-// Remove nonessential variables. try to get working again.
+/**
+ * Current issues:
+ * 		Constant 'Exception in thread "AWT-EventQueue-0" java.lang.IllegalThreadStateException' issue
+ * 			However, this issue only appears after the first iteration AND all the correct outputs are shown
+ * 			every time it runs.  Why does it actually work?
+ * 		The thread will not stop when I hit cancel
+ * 			However, sometimes it will stop, but without any reproducibility
+ * 			Somehow I fixed that with the .stop() and moving the calculationComplete = false outside the try
+ * 		When cancelled, the list of primes will not print.
+ * 			Need to change the method to return a list or something
+ */
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -22,6 +30,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public class Lab_Assignment_7 extends JFrame
@@ -31,15 +40,12 @@ public class Lab_Assignment_7 extends JFrame
 	private JButton startButton = new JButton("Start");
 	private JTextArea mainTextArea = new JTextArea();
 	private JTextField inputTextField = new JTextField();
-	//private boolean calculatorRunning = false;
 	private boolean inputIsNumber = false;
 	private String userInput = "";
 	private int userNumber = 0;
 	private long startTime = 0;
 	private long endTime = 0;
 	private long timeElapsed = 0;
-	private boolean firstTimeCalculation = true;
-	// Attempted to put the flag here, so all methods could access it
 	private volatile boolean calculationComplete = false;
 	private String directionPrompt = "Welcome to the Prime Number Calculator! Click below to get started!";
 	//private List<Integer> primeList = new ArrayList<Integer>();
@@ -56,20 +62,18 @@ public class Lab_Assignment_7 extends JFrame
 	private CancelButtonActionListener myCBAL = new CancelButtonActionListener();
 	private void endPrimeCalculator()
 	{
-		// This is firing off as many times as I have cumulatively chosen the cancel button
-	//	if( calculatorRunning == true)
-	//	{
-		myCalculatorThread = null;	
+		myCalculatorThread.stop();
+		myCalculatorThread = null;
+		myCalculatorThread = new Thread(myPCAR); 
 		calculationComplete = true;
-	//	}
+		
 		try
 		{
 			endTime = System.currentTimeMillis();
 			System.out.println(outputList);
 			timeElapsed = endTime - startTime;
-			//calculatorRunning = false;
 			inputIsNumber = false;
-			calculationComplete = false;
+			//calculationComplete = false;
 			inputTextField.setEditable(true);
 			inputTextField.setText("");
 			//update main text field with the last calculated prime, total number primes found, the number working towards, and overall time
@@ -82,6 +86,7 @@ public class Lab_Assignment_7 extends JFrame
 		{
 			System.out.println("Exception with cancelling calculator");
 		}
+		calculationComplete = false;
 		mainTextArea.setText(directionPrompt);
 		setVisible(true);
 		repaint();
@@ -97,7 +102,7 @@ public class Lab_Assignment_7 extends JFrame
 	private StartCalculatorActionListener mySCAL = new StartCalculatorActionListener();
 	private void promptUserForInput()
 	{
-		outputList.clear();
+		//outputList.clear();
 		try
 		{
 			getContentPane().remove(startButton);
@@ -121,15 +126,26 @@ public class Lab_Assignment_7 extends JFrame
 		{
 			cancelButton.setEnabled(true);
 			checkUserInput();
-			if( firstTimeCalculation == true)
-			{
-				//Thread myCalculatorThread = new Thread(myPCAR);
-				myCalculatorThread.start();
+			myCalculatorThread.start();
+	//		if( firstTimeCalculation == true)
+	//		{
+		//		Thread myCalculatorThread = new Thread(myPCAR);
+			/*
+			Thread blaarg = myCalculatorThread;
+			while( !calculationComplete )
+				{
+					blaarg.start();
+				}
+				blaarg.stop();
+				blaarg = null;
+				endPrimeCalculator();
+				*/
+			//	myCalculatorThread = null;
 				//new Thread(myPCAR).start();
 				//System.out.println(myCalculatorThread.getState());
-				firstTimeCalculation = false;
+	//			firstTimeCalculation = false;
 				//endPrimeCalculator();
-			}
+	//		}
 			//myCalculatorThread.resume();
 			//calculatorRunning = false;
 			//myCalculatorThread = null;
@@ -158,17 +174,16 @@ public class Lab_Assignment_7 extends JFrame
 	{
 		if( inputIsNumber == true )
 		{
-			//calculatorRunning = true;
-			calculatePrimes(userNumber);
-			//endPrimeCalculator();
+			outputList.clear();
+			outputList = calculatePrimes(userNumber);
 		}
 	}
-	private void calculatePrimes( Integer someNumber )
+	private List<Integer> calculatePrimes( Integer someNumber )
 	{
 		// The below code blocks are modified from Dr. Fodor's Programming 3, Lecture 12, Slide 10.
 		List<Integer> primeList = new ArrayList<Integer>();
 		primeList.add(2);
-		for( int x = 1; x <= someNumber && ! calculationComplete; x++)
+		for( int x = 1; x <= someNumber && !calculationComplete; x++)
 		{
 			primeList.add(x);
 			for( int y : primeList)
@@ -190,17 +205,16 @@ public class Lab_Assignment_7 extends JFrame
 				System.out.println("Most recent prime: " + primeList.get(primeList.size() - 1));
 			}
 		}
-		outputList = primeList;
-		primeList = null;
+		//outputList = primeList;
+		return primeList;
+		//primeList = null;
 	}
 	
 	private class PrimeCalculatorActionRunnable implements Runnable
 	{
 		public void run()
 		{
-			//while( !calculationComplete )
-			//{
-				try
+			try
 				{
 					startTime = System.currentTimeMillis();
 					runPrimeCalculator();
@@ -213,12 +227,24 @@ public class Lab_Assignment_7 extends JFrame
 				{
 					calculationComplete = true;
 				}
-		//	}
-			cancelButton.setEnabled(true);
+			try
+			{
+				SwingUtilities.invokeAndWait( new Runnable()
+				{
+					public void run()
+					{
+						cancelButton.setEnabled(true);;
+					}
+				});
+			}
+			catch( Exception ex )
+			{
+				System.out.println("Exception with invokeAndWait");
+			}
 		}
 	}
 	private PrimeCalculatorActionRunnable myPCAR = new PrimeCalculatorActionRunnable();
-	private Thread myCalculatorThread = new Thread(myPCAR); // leaving this here created illegalstateexception
+	private Thread myCalculatorThread = new Thread(myPCAR);
 	
  	private class SaveActionListener implements ActionListener
 	{
