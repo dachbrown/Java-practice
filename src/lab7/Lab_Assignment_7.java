@@ -1,14 +1,11 @@
 package lab7;
 /**
  * Current issues:
- * 		Constant 'Exception in thread "AWT-EventQueue-0" java.lang.IllegalThreadStateException' issue
- * 			However, this issue only appears after the first iteration AND all the correct outputs are shown
- * 			every time it runs.  Why does it actually work?
- * 		The thread will not stop when I hit cancel
- * 			However, sometimes it will stop, but without any reproducibility
- * 			Somehow I fixed that with the .stop() and moving the calculationComplete = false outside the try
  * 		When cancelled, the list of primes will not print.
  * 			Need to change the method to return a list or something
+ * 		Need to update the JPanel to print the outputs		
+ * 			Need to change where the endPrimeCalculator fires
+ * 		Need to change all the game options menus
  */
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -65,7 +62,7 @@ public class Lab_Assignment_7 extends JFrame
 		myCalculatorThread.stop();
 		myCalculatorThread = null;
 		myCalculatorThread = new Thread(myPCAR); 
-		calculationComplete = true;
+	//	calculationComplete = true;
 		
 		try
 		{
@@ -126,31 +123,14 @@ public class Lab_Assignment_7 extends JFrame
 		{
 			cancelButton.setEnabled(true);
 			checkUserInput();
-			myCalculatorThread.start();
-	//		if( firstTimeCalculation == true)
-	//		{
-		//		Thread myCalculatorThread = new Thread(myPCAR);
-			/*
-			Thread blaarg = myCalculatorThread;
-			while( !calculationComplete )
-				{
-					blaarg.start();
-				}
-				blaarg.stop();
-				blaarg = null;
-				endPrimeCalculator();
-				*/
-			//	myCalculatorThread = null;
-				//new Thread(myPCAR).start();
-				//System.out.println(myCalculatorThread.getState());
-	//			firstTimeCalculation = false;
-				//endPrimeCalculator();
-	//		}
-			//myCalculatorThread.resume();
-			//calculatorRunning = false;
-			//myCalculatorThread = null;
-			//myCalculatorThread.start();
-			//endPrimeCalculator(); //maybe put the end method here?
+			if( myCalculatorThread.getState().equals(Thread.State.NEW) )
+			{
+				myCalculatorThread.start();
+			}
+			else
+			{
+				myCalculatorThread.resume();
+			}
 		}
 	}
 	private RunCalculatorActionListener myRCAL = new RunCalculatorActionListener();
@@ -183,6 +163,10 @@ public class Lab_Assignment_7 extends JFrame
 		// The below code blocks are modified from Dr. Fodor's Programming 3, Lecture 12, Slide 10.
 		List<Integer> primeList = new ArrayList<Integer>();
 		primeList.add(2);
+		if( calculationComplete )
+		{
+			return primeList;
+		}
 		for( int x = 1; x <= someNumber && !calculationComplete; x++)
 		{
 			primeList.add(x);
