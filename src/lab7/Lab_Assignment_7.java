@@ -1,13 +1,5 @@
 package lab7;
-/**
- * Current issues:
- * 		
- * 		Need to change all the game options menus for correct prints
- * 
- * 		Need to clean out all superfluous comments
- * 
- * 		Maybe adjust the screen to only update once in a while instead of every time
- */
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -52,8 +44,6 @@ public class Lab_Assignment_7 extends JFrame
 	private String directionPrompt = "Welcome to the Prime Number Calculator! Click below to get started!";
 	private String continuePrompt = "Click below to start again!";
 	private String endingPrompt = "";
-	//private List<Integer> primeList = new ArrayList<Integer>();
-	
 	
 	private class CancelButtonActionListener implements ActionListener
 	{
@@ -65,7 +55,6 @@ public class Lab_Assignment_7 extends JFrame
 	private CancelButtonActionListener myCBAL = new CancelButtonActionListener();
 	private void endPrimeCalculator()
 	{
-		//myCalculatorThread.stop();
 		calculationComplete = true;
 		myCalculatorThread = null;
 		myCalculatorThread = new Thread(myPCAR);
@@ -79,8 +68,6 @@ public class Lab_Assignment_7 extends JFrame
 			inputIsNumber = false;
 			inputTextField.setEditable(true);
 			inputTextField.setText("");
-			//update main text field with the last calculated prime, total number primes found, the number working towards, and overall time
-			//mainTextArea.setText("Total time: " + timeElapsed/1000f + "\n");
 			calculatorTextArea.setText("");
 			getContentPane().remove(scrollArea);
 			getContentPane().remove(inputTextField);
@@ -95,7 +82,6 @@ public class Lab_Assignment_7 extends JFrame
 			System.out.println("Exception with cancelling calculator");
 		}
 		calculationComplete = false;
-		//mainTextArea.setText(directionPrompt);
 		setVisible(true);
 		repaint();
 	}
@@ -152,7 +138,6 @@ public class Lab_Assignment_7 extends JFrame
 		getContentPane().add(scrollArea, BorderLayout.CENTER);
 		setVisible(true);
 		repaint();
-		//mainTextArea.requestFocusInWindow();
 		try
 		{
 			userNumber = Integer.valueOf(userInput);
@@ -170,7 +155,6 @@ public class Lab_Assignment_7 extends JFrame
 		{
 			outputList.clear();
 			outputList = calculatePrimes(userNumber);
-			//endPrimeCalculator();
 		}
 	}
 	private List<Integer> calculatePrimes( Integer someNumber )
@@ -257,8 +241,6 @@ public class Lab_Assignment_7 extends JFrame
 	private void saveTextOutput()
 	{
 		// The below code blocks are modified from Dr. Fodor's Programming 3, Lecture 11, Slide 6
-		
-		//Adjust the below to account for the new output types
 		JFileChooser myJFC = new JFileChooser();
 		if( myJFC.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
 			return;
@@ -274,8 +256,7 @@ public class Lab_Assignment_7 extends JFrame
 		try
 		{
 			BufferedWriter writeSave = new BufferedWriter(new FileWriter(saveStateFile));
-			// Need to adjust the below to print the entire text area
-			writeSave.write("Thank you for playing!");
+			writeSave.write("Thank you for playing!\nThe number you chose was " + userNumber + "\nThe total number of primes found was " + this.outputList.size() + ".\nThis calculation took " + timeElapsed/1000f + " seconds.\nThe list of the calculated primes is below.\n" + outputList);
 			writeSave.flush();
 			writeSave.close();
 		}
