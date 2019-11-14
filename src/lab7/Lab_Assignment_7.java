@@ -1,11 +1,12 @@
 package lab7;
 /**
  * Current issues:
- * 		When cancelled, the list of primes will not print.
- * 			Need to change the method to return a list or something
- * 		Need to update the JPanel to print the outputs		
- * 			Need to change where the endPrimeCalculator fires
- * 		Need to change all the game options menus
+ * 		
+ * 		Need to change all the game options menus for correct prints
+ * 
+ * 		Need to clean out all superfluous comments
+ * 
+ * 		Maybe adjust the screen to only update once in a while instead of every time
  */
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,6 +26,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -36,6 +38,8 @@ public class Lab_Assignment_7 extends JFrame
 	private JButton cancelButton = new JButton("Cancel");
 	private JButton startButton = new JButton("Start");
 	private JTextArea mainTextArea = new JTextArea();
+	private JTextArea calculatorTextArea = new JTextArea();
+	private JScrollPane scrollArea = new JScrollPane(calculatorTextArea);
 	private JTextField inputTextField = new JTextField();
 	private boolean inputIsNumber = false;
 	private String userInput = "";
@@ -44,9 +48,11 @@ public class Lab_Assignment_7 extends JFrame
 	private long endTime = 0;
 	private long timeElapsed = 0;
 	private volatile boolean calculationComplete = false;
-	private String directionPrompt = "Welcome to the Prime Number Calculator! Click below to get started!";
-	//private List<Integer> primeList = new ArrayList<Integer>();
 	private List<Integer> outputList = new ArrayList<Integer>();
+	private String directionPrompt = "Welcome to the Prime Number Calculator! Click below to get started!";
+	private String continuePrompt = "Click below to start again!";
+	private String endingPrompt = "";
+	//private List<Integer> primeList = new ArrayList<Integer>();
 	
 	
 	private class CancelButtonActionListener implements ActionListener
@@ -59,32 +65,37 @@ public class Lab_Assignment_7 extends JFrame
 	private CancelButtonActionListener myCBAL = new CancelButtonActionListener();
 	private void endPrimeCalculator()
 	{
-		myCalculatorThread.stop();
+		//myCalculatorThread.stop();
+		calculationComplete = true;
 		myCalculatorThread = null;
-		myCalculatorThread = new Thread(myPCAR); 
-	//	calculationComplete = true;
-		
+		myCalculatorThread = new Thread(myPCAR);
 		try
 		{
 			endTime = System.currentTimeMillis();
 			System.out.println(outputList);
 			timeElapsed = endTime - startTime;
+			System.out.println(timeElapsed);
+			endingPrompt = "This calculation took " + timeElapsed/1000f + " seconds.\nThe number of primes found was " + outputList.size() + ".\n";
 			inputIsNumber = false;
-			//calculationComplete = false;
 			inputTextField.setEditable(true);
 			inputTextField.setText("");
 			//update main text field with the last calculated prime, total number primes found, the number working towards, and overall time
-			mainTextArea.setText("Total time: " + timeElapsed/1000f + "\n");
+			//mainTextArea.setText("Total time: " + timeElapsed/1000f + "\n");
+			calculatorTextArea.setText("");
+			getContentPane().remove(scrollArea);
 			getContentPane().remove(inputTextField);
 			getContentPane().remove(cancelButton);
 			getContentPane().add(startButton, BorderLayout.SOUTH);
+			getContentPane().add(mainTextArea);
+			mainTextArea.setText(endingPrompt);
+			mainTextArea.append(continuePrompt);
 		}
 		catch( Exception ex )
 		{
 			System.out.println("Exception with cancelling calculator");
 		}
 		calculationComplete = false;
-		mainTextArea.setText(directionPrompt);
+		//mainTextArea.setText(directionPrompt);
 		setVisible(true);
 		repaint();
 	}
@@ -99,7 +110,6 @@ public class Lab_Assignment_7 extends JFrame
 	private StartCalculatorActionListener mySCAL = new StartCalculatorActionListener();
 	private void promptUserForInput()
 	{
-		//outputList.clear();
 		try
 		{
 			getContentPane().remove(startButton);
@@ -138,7 +148,11 @@ public class Lab_Assignment_7 extends JFrame
 	{
 		userInput = inputTextField.getText();
 		inputTextField.setEditable(false);
-		mainTextArea.requestFocusInWindow();
+		getContentPane().remove(mainTextArea);
+		getContentPane().add(scrollArea, BorderLayout.CENTER);
+		setVisible(true);
+		repaint();
+		//mainTextArea.requestFocusInWindow();
 		try
 		{
 			userNumber = Integer.valueOf(userInput);
@@ -156,6 +170,7 @@ public class Lab_Assignment_7 extends JFrame
 		{
 			outputList.clear();
 			outputList = calculatePrimes(userNumber);
+			//endPrimeCalculator();
 		}
 	}
 	private List<Integer> calculatePrimes( Integer someNumber )
@@ -187,11 +202,11 @@ public class Lab_Assignment_7 extends JFrame
 			if( x == lastPrime)
 			{
 				System.out.println("Most recent prime: " + primeList.get(primeList.size() - 1));
+				calculatorTextArea.append("New prime " + primeList.get(primeList.size() - 1) + "\n");
+				calculatorTextArea.requestFocusInWindow();
 			}
 		}
-		//outputList = primeList;
 		return primeList;
-		//primeList = null;
 	}
 	
 	private class PrimeCalculatorActionRunnable implements Runnable
@@ -225,6 +240,7 @@ public class Lab_Assignment_7 extends JFrame
 			{
 				System.out.println("Exception with invokeAndWait");
 			}
+			endPrimeCalculator();
 		}
 	}
 	private PrimeCalculatorActionRunnable myPCAR = new PrimeCalculatorActionRunnable();
@@ -305,6 +321,8 @@ public class Lab_Assignment_7 extends JFrame
 			System.out.println("Bad Look And Feel");
 		}
 		setSize(550,200);
+
+		scrollArea.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(startButton, BorderLayout.SOUTH);
