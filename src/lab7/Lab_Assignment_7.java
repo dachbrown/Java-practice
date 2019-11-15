@@ -61,9 +61,9 @@ public class Lab_Assignment_7 extends JFrame
 		try
 		{
 			endTime = System.currentTimeMillis();
-			System.out.println(outputList);
+			//System.out.println(outputList);
 			timeElapsed = endTime - startTime;
-			System.out.println(timeElapsed);
+			//System.out.println(timeElapsed);
 			endingPrompt = "This calculation took " + timeElapsed/1000f + " seconds.\nThe number of primes found was " + outputList.size() + ".\n";
 			inputIsNumber = false;
 			inputTextField.setEditable(true);
@@ -185,7 +185,7 @@ public class Lab_Assignment_7 extends JFrame
 			int lastPrime = primeList.get(primeList.size() - 1);
 			if( x == lastPrime)
 			{
-				System.out.println("Most recent prime: " + primeList.get(primeList.size() - 1));
+				//System.out.println("Most recent prime: " + primeList.get(primeList.size() - 1));
 				calculatorTextArea.append("New prime " + primeList.get(primeList.size() - 1) + "\n");
 				calculatorTextArea.requestFocusInWindow();
 			}
