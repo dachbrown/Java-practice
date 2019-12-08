@@ -46,6 +46,7 @@ public class Lab_Assignment_8 extends JFrame
 	private String continuePrompt = "Click below to start again!";
 	private String endingPrompt = "";
 	private AtomicIntegerArray threadSafeList;
+	private List<Integer> finalOutputList = new ArrayList<Integer>();
 	
 	private class CancelButtonActionListener implements ActionListener
 	{
@@ -60,6 +61,8 @@ public class Lab_Assignment_8 extends JFrame
 		calculationComplete = true;
 		try
 		{
+			// Creates a formatted, readable output from the thread safe data structure
+			createFinalOutput();
 			endTime = System.currentTimeMillis();
 			//System.out.println(outputList);
 			timeElapsed = endTime - startTime;
@@ -101,7 +104,6 @@ public class Lab_Assignment_8 extends JFrame
 			getContentPane().remove(startButton);
 			getContentPane().add(cancelButton, BorderLayout.NORTH);
 			getContentPane().add(inputTextField, BorderLayout.SOUTH);
-			inputTextField.addActionListener(myRCAL);
 		}
 		catch( Exception ex )
 		{
@@ -118,7 +120,16 @@ public class Lab_Assignment_8 extends JFrame
 		public void actionPerformed(ActionEvent e)
 		{
 			cancelButton.setEnabled(true);
+			// Validate user input
 			checkUserInput();
+			// Create a list of integers from 1 to the user input as a thread safe data structure
+			makeIntegerList();
+			// Use the Sieve of Eratosthenes
+			/*
+			 * This is where some of TO DO stuff must go
+			 */
+			
+			// Then split into the 4 threads
 			new Thread(myPCAR).start();
 		}
 	}
@@ -155,17 +166,145 @@ public class Lab_Assignment_8 extends JFrame
 	{
 		if( inputIsNumber == true )
 		{
+			/*
+			 * TO DO:
+			 * make the semaphore for the multi-threading control
+			 * make the for loop for determining the values to divide by a prime and sieve out the multiples
+			 * replace the outputList variable with finalOutputList
+			 * remove unnecessary instances of outputList
+			 */
 			outputList.clear();
 			outputList = calculatePrimes(userNumber);
-			// Need to put stuff about the atomicintegerarray here to initialize it
-			threadSafeList = new AtomicIntegerArray(userNumber);
+			// This prime calculator is based on the Sieve of Eratosthenes
+			/*
+			// This must be atomic, as accessed by multiple threads
 			for( int x = 0; x < userNumber; x++ )
 			{
-				threadSafeList.set(x, x+1);
-			}
-			System.out.println(threadSafeList);
+				// This specific piece is the multi-threading, where the value of 2 must be changed to any new prime
+				
+				if( threadSafeList.get(x) % 2 == 0 )
+				{
+					// The .compareAndSet() method is atomic and therefore thread safe.
+					threadSafeList.compareAndSet(x, x+1, 0);
+				}
+			}*/
 		}
 	}
+
+	private void makeIntegerList()
+	{
+		// Instantiate the thread safe data structure using AtomicIntegerArray
+		threadSafeList = new AtomicIntegerArray(userNumber);
+		// The .set() method is not atomic, however, this loop need not be atomic, as it is done once by a single thread
+		for( int x = 0; x < userNumber; x++ )
+		{
+			threadSafeList.set(x, x+1);
+		}
+	}
+	
+	private void createFinalOutput()
+	{
+		// This need not be atomic, as it is done at the end
+		for( int x = 0; x < userNumber; x++)
+		{
+			int q = threadSafeList.get(x);
+			if( q != 0)
+			{
+				finalOutputList.add(q);
+			}
+		}
+		// Need to remove these, as they are for testing
+		System.out.println(threadSafeList);
+		System.out.println(finalOutputList);
+		System.out.println(finalOutputList.size());
+	}
+	
+	private void sieveOfEratosthenes()
+	{
+		finalOutputList.clear();
+//		while( !calculationComplete )
+//		{
+			for( int x = 0; x < userNumber; x++)
+			{
+				int w = threadSafeList.get(x);
+			//	System.out.println("Hi");
+				if( w == 1 )
+				{
+					System.out.println("gas0");
+					threadSafeList.getAndSet(x, 0);
+				}
+				else
+				{
+					for( int y = x+1; y <= userNumber; y++ )
+					{
+						int q = threadSafeList.get(y);
+						if( q % w == 0)
+						{
+							System.out.println("hello");
+							threadSafeList.getAndSet(y, 0);
+						}
+						/*int q = threadSafeList.get(y);
+						if( x == y)
+						{
+							continue;
+						}
+						else if( q%w == 0 )
+						{
+							threadSafeList.getAndSet(y, 0);
+						}
+						else
+						{
+							continue;
+						}*/
+					}
+	//			else if( w == 0 )
+	//			{
+	//				System.out.println("w==0");
+	//				continue;
+	//			}
+			/*	else if( w == x+1 )
+				{
+					System.out.println("w==x+1");
+					continue;
+				}
+				else //if( w < userNumber )
+				{
+					for( int y = x; y < userNumber; y+=w )
+					{
+						int r = threadSafeList.get(y);
+						if( r == 0 )
+						{
+							System.out.println("r==0");
+							continue;
+						}
+						else if( r/w == 1 )
+						{
+							System.out.println("r/w==1");
+							continue;
+						}
+						else
+						{
+							threadSafeList.getAndSet(y, 0);
+						}
+					}*/
+					/*for( int y = 2*x; y < userNumber; y+=w)
+					{
+						int q = threadSafeList.get(y);
+						int z = q % w;
+						if( q == 0 )
+						{
+							break;
+						}
+						else if( z == 0 )
+						{
+							threadSafeList.getAndSet(y, 30);
+						}
+					}*/
+				
+				}
+		}
+	}
+
 	private List<Integer> calculatePrimes( Integer someNumber )
 	{
 		// The below code blocks are modified from Dr. Fodor's Programming 3, Lecture 12, Slide 10.
@@ -211,6 +350,7 @@ public class Lab_Assignment_8 extends JFrame
 				{
 					startTime = System.currentTimeMillis();
 					runPrimeCalculator();
+					sieveOfEratosthenes();
 				}
 				catch( Exception ex )
 				{
@@ -313,8 +453,9 @@ public class Lab_Assignment_8 extends JFrame
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(startButton, BorderLayout.SOUTH);
 		startButton.addActionListener(mySCAL);
-		// You must add the cancel action listener here, without showing it
+		// You must add the cancel action listener here and the run calculator action listener, without showing them
 		cancelButton.addActionListener(myCBAL);
+		inputTextField.addActionListener(myRCAL);
 		getContentPane().add(mainTextArea, BorderLayout.CENTER);
 		mainTextArea.setEditable(false);
 		mainTextArea.setLineWrap(true);
