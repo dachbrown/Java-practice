@@ -199,6 +199,7 @@ public class Lab_Assignment_8 extends JFrame
 		for( int x = 0; x < userNumber; x++ )
 		{
 			threadSafeList.set(x, x+1);
+			//doodle
 		}
 	}
 	
