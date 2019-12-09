@@ -234,76 +234,28 @@ public class Lab_Assignment_8 extends JFrame
 					System.out.println("gas0");
 					threadSafeList.getAndSet(x, 0);
 				}
-				else
+				else if( w == 0)
 				{
-					for( int y = x+1; y <= userNumber; y++ )
-					{
-						int q = threadSafeList.get(y);
-						if( q % w == 0)
-						{
-							System.out.println("hello");
-							threadSafeList.getAndSet(y, 0);
-						}
-						/*int q = threadSafeList.get(y);
-						if( x == y)
-						{
-							continue;
-						}
-						else if( q%w == 0 )
-						{
-							threadSafeList.getAndSet(y, 0);
-						}
-						else
-						{
-							continue;
-						}*/
-					}
-	//			else if( w == 0 )
-	//			{
-	//				System.out.println("w==0");
-	//				continue;
-	//			}
-			/*	else if( w == x+1 )
-				{
-					System.out.println("w==x+1");
 					continue;
 				}
-				else //if( w < userNumber )
+				else
 				{
-					for( int y = x; y < userNumber; y+=w )
+					//int z = x + w;
+					for( int y = 0; y < userNumber; y++ )
 					{
-						int r = threadSafeList.get(y);
-						if( r == 0 )
+						int q = threadSafeList.get(y);
+						if( q / w != 1 && q % w == 0 )
 						{
-							System.out.println("r==0");
-							continue;
-						}
-						else if( r/w == 1 )
-						{
-							System.out.println("r/w==1");
-							continue;
+							threadSafeList.getAndSet(y, 0);
+							//threadSafeList.decrementAndGet(y);
 						}
 						else
 						{
-							threadSafeList.getAndSet(y, 0);
+							System.out.println(y + "," + q + "," + w);
 						}
-					}*/
-					/*for( int y = 2*x; y < userNumber; y+=w)
-					{
-						int q = threadSafeList.get(y);
-						int z = q % w;
-						if( q == 0 )
-						{
-							break;
-						}
-						else if( z == 0 )
-						{
-							threadSafeList.getAndSet(y, 30);
-						}
-					}*/
-				
+					}
 				}
-		}
+			}
 	}
 
 	private List<Integer> calculatePrimes( Integer someNumber )
@@ -355,7 +307,7 @@ public class Lab_Assignment_8 extends JFrame
 				}
 				catch( Exception ex )
 				{
-					JOptionPane.showMessageDialog(mainTextArea, "Exception with PCAR.");
+					//JOptionPane.showMessageDialog(mainTextArea, "Exception with PCAR.");
 				}
 			try
 			{
