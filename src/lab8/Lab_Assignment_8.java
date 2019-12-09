@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import javax.swing.BorderFactory;
@@ -47,6 +48,7 @@ public class Lab_Assignment_8 extends JFrame
 	private String endingPrompt = "";
 	private AtomicIntegerArray threadSafeList;
 	private List<Integer> finalOutputList = new ArrayList<Integer>();
+	Semaphore sem = new Semaphore(4);
 	
 	private class CancelButtonActionListener implements ActionListener
 	{
@@ -64,10 +66,8 @@ public class Lab_Assignment_8 extends JFrame
 			// Creates a formatted, readable output from the thread safe data structure
 			createFinalOutput();
 			endTime = System.currentTimeMillis();
-			//System.out.println(outputList);
 			timeElapsed = endTime - startTime;
-			//System.out.println(timeElapsed);
-			endingPrompt = "This calculation took " + timeElapsed/1000f + " seconds.\nThe number of primes found was " + outputList.size() + ".\n";
+			endingPrompt = "This calculation took " + timeElapsed/1000f + " seconds.\nThe number of primes found was " + finalOutputList.size() + ".\n";
 			inputIsNumber = false;
 			inputTextField.setEditable(true);
 			inputTextField.setText("");
@@ -120,17 +120,16 @@ public class Lab_Assignment_8 extends JFrame
 		public void actionPerformed(ActionEvent e)
 		{
 			cancelButton.setEnabled(true);
+			finalOutputList.clear();
 			// Validate user input
 			checkUserInput();
 			// Create a list of integers from 1 to the user input as a thread safe data structure
 			makeIntegerList();
+			//finalOutputList.clear();
 			// Use the Sieve of Eratosthenes
-			/*
-			 * This is where some of TO DO stuff must go
-			 */
-			
-			// Then split into the 4 threads
-			new Thread(myPCAR).start();
+			new Thread(mySCAR).start();
+			// This needs to be a way to pull the semaphores, it is in his lecture
+			endPrimeCalculator();
 		}
 	}
 	private RunCalculatorActionListener myRCAL = new RunCalculatorActionListener();
@@ -168,8 +167,10 @@ public class Lab_Assignment_8 extends JFrame
 		{
 			/*
 			 * TO DO:
-			 * make the semaphore for the multi-threading control
-			 * make the for loop for determining the values to divide by a prime and sieve out the multiples
+			 * make the semaphore for the multi-threading control??
+			 * maybe create a while list control for the sieve
+			 * fix the mySOEAR
+			 * ##This is done. make the for loop for determining the values to divide by a prime and sieve out the multiples
 			 * replace the outputList variable with finalOutputList
 			 * remove unnecessary instances of outputList
 			 */
@@ -199,7 +200,6 @@ public class Lab_Assignment_8 extends JFrame
 		for( int x = 0; x < userNumber; x++ )
 		{
 			threadSafeList.set(x, x+1);
-			//doodle
 		}
 	}
 	
@@ -220,42 +220,33 @@ public class Lab_Assignment_8 extends JFrame
 		System.out.println(finalOutputList.size());
 	}
 	
-	private void sieveOfEratosthenes()
+	private void sieveOfEratosthenes( int x )
 	{
-		finalOutputList.clear();
-//		while( !calculationComplete )
-//		{
-			for( int x = 0; x < userNumber; x++)
+		// All multiples and the number 1 are set to 0 for easy removal later. The method .getAndSet() is atomic.
+		//finalOutputList.clear();
+		while( !calculationComplete )
+		{
+			int w = threadSafeList.get(x);
+			if( w == 1 )
 			{
-				int w = threadSafeList.get(x);
-			//	System.out.println("Hi");
-				if( w == 1 )
+				threadSafeList.getAndSet(x, 0);
+			}
+			else if( w == 0)
+			{
+				continue;
+			}
+			else
+			{
+				for( int y = 0; y < userNumber; y++ )
 				{
-					System.out.println("gas0");
-					threadSafeList.getAndSet(x, 0);
-				}
-				else if( w == 0)
-				{
-					continue;
-				}
-				else
-				{
-					//int z = x + w;
-					for( int y = 0; y < userNumber; y++ )
+					int q = threadSafeList.get(y);
+					if( q / w != 1 && q % w == 0 )
 					{
-						int q = threadSafeList.get(y);
-						if( q / w != 1 && q % w == 0 )
-						{
-							threadSafeList.getAndSet(y, 0);
-							//threadSafeList.decrementAndGet(y);
-						}
-						else
-						{
-							System.out.println(y + "," + q + "," + w);
-						}
+						threadSafeList.getAndSet(y, 0);
 					}
 				}
 			}
+		}
 	}
 
 	private List<Integer> calculatePrimes( Integer someNumber )
@@ -301,13 +292,12 @@ public class Lab_Assignment_8 extends JFrame
 		{
 			try
 				{
-					startTime = System.currentTimeMillis();
 					runPrimeCalculator();
-					sieveOfEratosthenes();
+					sieveOfEratosthenes(userNumber);
 				}
 				catch( Exception ex )
 				{
-					//JOptionPane.showMessageDialog(mainTextArea, "Exception with PCAR.");
+					JOptionPane.showMessageDialog(mainTextArea, "Exception with PCAR.");
 				}
 			try
 			{
@@ -327,6 +317,76 @@ public class Lab_Assignment_8 extends JFrame
 		}
 	}
 	private PrimeCalculatorActionRunnable myPCAR = new PrimeCalculatorActionRunnable();
+	
+	private class StartCalculatorActionRunnable implements Runnable
+	{
+		public void run()
+		{
+			try
+			{
+				sem.acquire();
+				startTime = System.currentTimeMillis();
+				for( int x = 0; x < userNumber; x++)
+				{
+					new Thread(new SOEActionRunnable(x)).start();
+				}
+			}
+			catch( Exception ex )
+			{
+				//JOptionPane.showMessageDialog(mainTextArea, "Exception with SCAR.");
+			}
+			try
+			{
+				SwingUtilities.invokeAndWait( new Runnable()
+				{
+					public void run()
+					{
+						cancelButton.setEnabled(true);;
+					}
+				});
+			}
+			catch( Exception ex )
+			{
+				JOptionPane.showMessageDialog(mainTextArea, "Exception with invokeAndWait, SCAR");
+			}
+		}
+	}
+	private StartCalculatorActionRunnable mySCAR = new StartCalculatorActionRunnable();
+	
+	private class SOEActionRunnable implements Runnable
+	{
+		private final int x;
+		private SOEActionRunnable(int x)
+		{
+			this.x = x;
+		}
+		public void run()
+		{
+			try
+			{
+				sieveOfEratosthenes(x);
+				sem.release();
+			}
+			catch( Exception ex )
+			{
+				//JOptionPane.showMessageDialog(mainTextArea, "Exception with SOEAR.");
+			}
+			try
+			{
+				SwingUtilities.invokeAndWait( new Runnable()
+				{
+					public void run()
+					{
+						cancelButton.setEnabled(true);;
+					}
+				});
+			}
+			catch( Exception ex )
+			{
+				JOptionPane.showMessageDialog(mainTextArea, "Exception with invokeAndWait, SOEAR");
+			}
+		}
+	}
 	
  	private class SaveActionListener implements ActionListener
 	{
@@ -354,7 +414,7 @@ public class Lab_Assignment_8 extends JFrame
 		try
 		{
 			BufferedWriter writeSave = new BufferedWriter(new FileWriter(saveStateFile));
-			writeSave.write("Thank you for playing!\nThe number you chose was " + userNumber + "\nThe total number of primes found was " + this.outputList.size() + ".\nThis calculation took " + timeElapsed/1000f + " seconds.\nThe list of the calculated primes is below.\n" + outputList);
+			writeSave.write("Thank you for playing!\nThe number you chose was " + userNumber + "\nThe total number of primes found was " + this.finalOutputList.size() + ".\nThis calculation took " + timeElapsed/1000f + " seconds.\nThe list of the calculated primes is below.\n" + finalOutputList);
 			writeSave.flush();
 			writeSave.close();
 		}
