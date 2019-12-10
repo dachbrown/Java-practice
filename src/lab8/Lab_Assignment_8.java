@@ -42,13 +42,13 @@ public class Lab_Assignment_8 extends JFrame
 	private long endTime = 0;
 	private long timeElapsed = 0;
 	private volatile boolean calculationComplete;
-	private List<Integer> outputList = new ArrayList<Integer>();
 	private String directionPrompt = "Welcome to the Prime Number Calculator! Click below to get started!";
 	private String continuePrompt = "Click below to start again!";
 	private String endingPrompt = "";
 	private AtomicIntegerArray threadSafeList;
 	private List<Integer> finalOutputList = new ArrayList<Integer>();
-	Semaphore sem = new Semaphore(4);
+	private int numThreads = 8;
+	private Semaphore sem = new Semaphore(numThreads);
 	
 	private class CancelButtonActionListener implements ActionListener
 	{
@@ -125,11 +125,8 @@ public class Lab_Assignment_8 extends JFrame
 			checkUserInput();
 			// Create a list of integers from 1 to the user input as a thread safe data structure
 			makeIntegerList();
-			//finalOutputList.clear();
-			// Use the Sieve of Eratosthenes
+			// Launch the manager thread
 			new Thread(mySCAR).start();
-			// This needs to be a way to pull the semaphores, it is in his lecture
-			endPrimeCalculator();
 		}
 	}
 	private RunCalculatorActionListener myRCAL = new RunCalculatorActionListener();
@@ -161,36 +158,6 @@ public class Lab_Assignment_8 extends JFrame
 		}
 		
 	}
-	private void runPrimeCalculator()
-	{
-		if( inputIsNumber == true )
-		{
-			/*
-			 * TO DO:
-			 * make the semaphore for the multi-threading control??
-			 * maybe create a while list control for the sieve
-			 * fix the mySOEAR
-			 * ##This is done. make the for loop for determining the values to divide by a prime and sieve out the multiples
-			 * replace the outputList variable with finalOutputList
-			 * remove unnecessary instances of outputList
-			 */
-			outputList.clear();
-			outputList = calculatePrimes(userNumber);
-			// This prime calculator is based on the Sieve of Eratosthenes
-			/*
-			// This must be atomic, as accessed by multiple threads
-			for( int x = 0; x < userNumber; x++ )
-			{
-				// This specific piece is the multi-threading, where the value of 2 must be changed to any new prime
-				
-				if( threadSafeList.get(x) % 2 == 0 )
-				{
-					// The .compareAndSet() method is atomic and therefore thread safe.
-					threadSafeList.compareAndSet(x, x+1, 0);
-				}
-			}*/
-		}
-	}
 
 	private void makeIntegerList()
 	{
@@ -214,16 +181,17 @@ public class Lab_Assignment_8 extends JFrame
 				finalOutputList.add(q);
 			}
 		}
+		/*
 		// Need to remove these, as they are for testing
 		System.out.println(threadSafeList);
 		System.out.println(finalOutputList);
 		System.out.println(finalOutputList.size());
+		*/
 	}
 	
 	private void sieveOfEratosthenes( int x )
 	{
 		// All multiples and the number 1 are set to 0 for easy removal later. The method .getAndSet() is atomic.
-		//finalOutputList.clear();
 		while( !calculationComplete )
 		{
 			int w = threadSafeList.get(x);
@@ -249,75 +217,6 @@ public class Lab_Assignment_8 extends JFrame
 		}
 	}
 
-	private List<Integer> calculatePrimes( Integer someNumber )
-	{
-		// The below code blocks are modified from Dr. Fodor's Programming 3, Lecture 12, Slide 10.
-		List<Integer> primeList = new ArrayList<Integer>();
-		primeList.add(2);
-		calculationComplete = false;
-		while( !calculationComplete )
-		{
-			for( int x = 1; x <= someNumber; x++)
-			{
-				primeList.add(x);
-				for( int y : primeList)
-				{
-					if( x % y == 0) // If a number is evenly divisible by any prime, remove that number and break the loop.
-					{
-						primeList.remove(primeList.size() - 1);
-						break;
-					}
-					else if( x / y == 1 )  // Else if it is divisible by itself, break the loop.
-					{
-						break;
-					}
-				}
-				//System.out.println(primeList.size());
-				int lastPrime = primeList.get(primeList.size() - 1);
-				if( x == lastPrime)
-				{
-					//System.out.println("Most recent prime: " + primeList.get(primeList.size() - 1));
-					calculatorTextArea.append("New prime " + primeList.get(primeList.size() - 1) + "\n");
-					calculatorTextArea.requestFocusInWindow();
-				}
-			}
-		calculationComplete = true;
-		}
-		return primeList;
-	}
-	
-	private class PrimeCalculatorActionRunnable implements Runnable
-	{
-		public void run()
-		{
-			try
-				{
-					runPrimeCalculator();
-					sieveOfEratosthenes(userNumber);
-				}
-				catch( Exception ex )
-				{
-					JOptionPane.showMessageDialog(mainTextArea, "Exception with PCAR.");
-				}
-			try
-			{
-				SwingUtilities.invokeAndWait( new Runnable()
-				{
-					public void run()
-					{
-						cancelButton.setEnabled(true);;
-					}
-				});
-			}
-			catch( Exception ex )
-			{
-				JOptionPane.showMessageDialog(mainTextArea, "Exception with invokeAndWait");
-			}
-			endPrimeCalculator();
-		}
-	}
-	private PrimeCalculatorActionRunnable myPCAR = new PrimeCalculatorActionRunnable();
-	
 	private class StartCalculatorActionRunnable implements Runnable
 	{
 		public void run()
@@ -330,10 +229,11 @@ public class Lab_Assignment_8 extends JFrame
 				{
 					new Thread(new SOEActionRunnable(x)).start();
 				}
+				endPrimeCalculator();
 			}
 			catch( Exception ex )
 			{
-				//JOptionPane.showMessageDialog(mainTextArea, "Exception with SCAR.");
+				JOptionPane.showMessageDialog(mainTextArea, "Exception with SCAR.");
 			}
 			try
 			{
@@ -369,7 +269,7 @@ public class Lab_Assignment_8 extends JFrame
 			}
 			catch( Exception ex )
 			{
-				//JOptionPane.showMessageDialog(mainTextArea, "Exception with SOEAR.");
+				JOptionPane.showMessageDialog(mainTextArea, "Exception with SOEAR.");
 			}
 			try
 			{
